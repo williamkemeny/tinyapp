@@ -18,6 +18,14 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+app.get("/urls/:id", (req, res) => {
+  const templateVars = {
+    id: req.params.id,
+    longURL: urlDatabase[req.params.id] /* What goes here? */,
+  };
+  res.render("urls_show", templateVars);
+});
+
 app.get("*", (req, res) => {
   res.send("<html><body><b>404 not found</b></body></html>\n");
 });

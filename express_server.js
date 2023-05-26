@@ -44,7 +44,7 @@ app.post("/urls", (req, res) => {
     urlDatabase[shortURL] = req.body.longURL;
     const templateVars = {
       id: shortURL,
-      longURL: req.body.longURL /* What goes here? */,
+      longURL: req.body.longURL,
     };
     res.render("urls_show", templateVars);
   } else {
@@ -56,18 +56,37 @@ app.post("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[req.params.id] /* What goes here? */,
+    longURL: urlDatabase[req.params.id],
   };
   res.render("urls_show", templateVars);
 });
 
+//update button
+app.post("/urls/:id/update", (req, res) => {
+  if (urlDatabase[req.params.id]) {
+    urlDatabase[req.params.id] = req.body.newURL;
+    let templateVars = {
+      id: req.params.id,
+      longURL: urlDatabase[req.params.id],
+    };
+    res.render("urls_show", templateVars);
+  } else {
+    const templateVars = {
+      id: req.params.id,
+      longURL: urlDatabase[req.params.id],
+    };
+    res.render("urls_show", templateVars);
+  }
+});
+
+//delete button
 app.post("/urls/:id/delete", (req, res) => {
-  console.log(req.params.id);
   delete urlDatabase[req.params.id];
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
+//Link to the website
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);

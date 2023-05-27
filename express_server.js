@@ -30,6 +30,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  //console.log("Cookies: ", req.headers.cookie);
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
@@ -90,6 +91,14 @@ app.post("/urls/:id/delete", (req, res) => {
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
+});
+
+app.post("/login", (req, res) => {
+  if (req.body.username !== "") {
+    res.cookie("username ", req.body.username);
+  }
+  const templateVars = { urls: urlDatabase };
+  res.render("urls_index", templateVars);
 });
 
 app.get("*", (req, res) => {

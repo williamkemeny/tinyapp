@@ -1,4 +1,6 @@
 const express = require("express");
+const cookieParser = require("cookie-parser");
+const { setTimeout } = require("timers/promises");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -24,19 +26,20 @@ const urlDatabase = {
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
 app.get("/urls", (req, res) => {
-  //console.log("Cookies: ", req.headers.cookie);
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { templateVars, urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  res.render("urls_new", templateVars);
 });
 
 app.post("/urls", (req, res) => {
@@ -44,6 +47,7 @@ app.post("/urls", (req, res) => {
     let shortURL = generateRandomString();
     urlDatabase[shortURL] = req.body.longURL;
     const templateVars = {
+      username: req.cookies["username"],
       id: shortURL,
       longURL: req.body.longURL,
     };
@@ -56,6 +60,7 @@ app.post("/urls", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
+    username: req.cookies["username"],
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
   };
@@ -67,12 +72,14 @@ app.post("/urls/:id/update", (req, res) => {
   if (urlDatabase[req.params.id]) {
     urlDatabase[req.params.id] = req.body.newURL;
     let templateVars = {
+      username: req.cookies["username"],
       id: req.params.id,
       longURL: urlDatabase[req.params.id],
     };
     res.render("urls_show", templateVars);
   } else {
     const templateVars = {
+      username: req.cookies["username"],
       id: req.params.id,
       longURL: urlDatabase[req.params.id],
     };
@@ -83,7 +90,7 @@ app.post("/urls/:id/update", (req, res) => {
 //delete button
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
@@ -93,11 +100,20 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+//Login
 app.post("/login", (req, res) => {
-  if (req.body.username !== "") {
-    res.cookie("username ", req.body.username);
-  }
-  const templateVars = { urls: urlDatabase };
+  res.cookie("username", req.body.username);
+  const templateVars = {
+    username: req.cookies["username"],
+    urls: urlDatabase,
+  };
+  res.render("urls_index", templateVars);
+});
+
+//Logout
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  templateVars = { username: "", urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
@@ -108,5 +124,3 @@ app.get("*", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-//test

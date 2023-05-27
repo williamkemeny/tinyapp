@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { templateVars, urls: urlDatabase };
+  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
@@ -104,7 +104,7 @@ app.get("/u/:id", (req, res) => {
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);
   const templateVars = {
-    username: req.cookies["username"],
+    username: req.body.username,
     urls: urlDatabase,
   };
   res.render("urls_index", templateVars);

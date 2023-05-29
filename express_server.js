@@ -100,6 +100,18 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+//Registration Page
+app.get("/register", (req, res) => {
+  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  res.render("urls_registration", templateVars);
+});
+
+app.post("/register", (req, res) => {
+  const submittedEmail = req.body.email;
+  const submittedPassword = req.body.password;
+  res.redirect("/urls");
+});
+
 //Login
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);

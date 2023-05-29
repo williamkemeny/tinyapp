@@ -1,6 +1,5 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
-const { setTimeout } = require("timers/promises");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -19,9 +18,31 @@ function generateRandomString(stringLen = 6) {
   return randString;
 }
 
+const hasUser = function (email, user) {
+  for (const profile in user) {
+    if (user[profile].email === email) {
+      return true;
+    }
+  }
+  return false;
+};
+
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
+};
+
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
 };
 
 app.set("view engine", "ejs");
@@ -107,19 +128,40 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const submittedEmail = req.body.email;
-  const submittedPassword = req.body.password;
-  res.redirect("/urls");
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!email || !password) {
+    res.status(400).send("Please include both a valid email and password");
+  } else if (hasUser(email, users)) {
+    res.status(400).send("An account already exists for this account address");
+  } else {
+    const id = generateRandomString();
+    users[id] = {
+      id,
+      email,
+      password,
+    };
+    res.cookie("user_id", id);
+    res.redirect("/urls");
+  }
 });
 
 //Login
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  const templateVars = {
-    username: req.body.username,
-    urls: urlDatabase,
-  };
-  res.render("urls_index", templateVars);
+  if (hasUser(req.body.username, users)) {
+    res.cookie("username", req.body.username);
+    const templateVars = {
+      username: req.body.username,
+      urls: urlDatabase,
+    };
+    res.render("urls_index", templateVars);
+  } else {
+    const templateVars = {
+      username: "",
+      urls: urlDatabase,
+    };
+    res.render("urls_index", templateVars);
+  }
 });
 
 //Logout

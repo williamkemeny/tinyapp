@@ -18,16 +18,27 @@ function generateRandomString(stringLen = 6) {
   return randString;
 }
 
-const hasUser = function (email, user) {
+const hasUser = function (input, user) {
   for (const profile in user) {
-    if (user[profile].email === email) {
+    if (user[profile].id === input) {
+      return true;
+    } else if (user[profile].email === input) {
       return true;
     }
   }
   return false;
 };
 
-const findID = function (email, user) {
+const hasURL = function (input, data) {
+  for (const shortURL in data) {
+    if (shortURL === input) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const findIDWithEmail = function (email, user) {
   for (const profile in user) {
     if (user[profile].email === email) {
       return profile;
@@ -76,23 +87,32 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  if (!Object.values(urlDatabase).includes(req.body.longURL)) {
-    let shortURL = generateRandomString();
-    urlDatabase[shortURL] = req.body.longURL;
-    const templateVars = {
-      user: users[req.cookies["user_id"]],
-      id: shortURL,
-      longURL: req.body.longURL,
-    };
-    res.render("urls_show", templateVars);
+  if (hasUser(req.cookies["user_id"], users)) {
+    if (!Object.values(urlDatabase).includes(req.body.longURL)) {
+      let shortURL = generateRandomString();
+      urlDatabase[shortURL] = req.body.longURL;
+      const templateVars = {
+        user: users[req.cookies["user_id"]],
+        id: shortURL,
+        longURL: req.body.longURL,
+      };
+      res.render("urls_show", templateVars);
+    } else {
+      const templateVars = { urls: urlDatabase };
+      res.render("urls_index", templateVars);
+    }
   } else {
-    const templateVars = { urls: urlDatabase };
-    res.render("urls_index", templateVars);
+    res
+      .status(400)
+      .send("Only registered and logged in users can create new urls");
   }
 });
 
 //Details about URL (Can delete on this page)
 app.get("/urls/:id", (req, res) => {
+  if (!hasURL(req.params.id, urlDatabase)) {
+    res.status(400).send("Not a valid Tiny URL");
+  }
   const templateVars = {
     user: users[req.cookies["user_id"]],
     id: req.params.id,
@@ -178,7 +198,7 @@ app.get("/login", (req, res) => {
 //Login
 app.post("/login", (req, res) => {
   if (hasUser(req.body.email, users)) {
-    const id = findID(req.body.email, users);
+    const id = findIDWithEmail(req.body.email, users);
     if (req.body.password === users[id].password) {
       res.cookie("user_id", id);
       res.redirect("/urls");

@@ -183,14 +183,10 @@ app.post("/login", (req, res) => {
       res.cookie("user_id", id);
       res.redirect("/urls");
     } else {
-      res.status(400).send("The password does not match.");
+      res.status(403).send("The password does not match.");
     }
   } else {
-    const templateVars = {
-      user: users[req.cookies["user_id"]],
-      urls: urlDatabase,
-    };
-    res.render("urls_login", templateVars);
+    res.status(403).send("The email could not be found");
   }
 });
 

@@ -178,8 +178,13 @@ app.get("/login", (req, res) => {
 //Login
 app.post("/login", (req, res) => {
   if (hasUser(req.body.email, users)) {
-    res.cookie("user_id", findID(req.body.email, users));
-    res.redirect("/urls");
+    const id = findID(req.body.email, users);
+    if (req.body.password === users[id].password) {
+      res.cookie("user_id", id);
+      res.redirect("/urls");
+    } else {
+      res.status(400).send("The password does not match.");
+    }
   } else {
     const templateVars = {
       user: users[req.cookies["user_id"]],

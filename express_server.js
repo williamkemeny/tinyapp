@@ -123,15 +123,17 @@ app.get("/urls/:id", (req, res) => {
 
 //update button
 app.post("/urls/:id/update", (req, res) => {
-  if (urlDatabase[req.params.id]) {
+  if (hasUser(req.cookies["user_id"], users)) {
+    //if you arent logged in you can't change the url
     urlDatabase[req.params.id] = req.body.newURL;
-    let templateVars = {
+    const templateVars = {
       user: users[req.cookies["user_id"]],
       id: req.params.id,
       longURL: urlDatabase[req.params.id],
     };
     res.render("urls_show", templateVars);
   } else {
+    //can still see the page just can't edit
     const templateVars = {
       user: users[req.cookies["user_id"]],
       id: req.params.id,
@@ -141,7 +143,7 @@ app.post("/urls/:id/update", (req, res) => {
   }
 });
 
-//delete button
+//delete button will remove the id from urlsDatabase
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
   const templateVars = {
@@ -198,8 +200,10 @@ app.get("/login", (req, res) => {
 //Login
 app.post("/login", (req, res) => {
   if (hasUser(req.body.email, users)) {
+    //if you try logging in with the right email
     const id = findIDWithEmail(req.body.email, users);
     if (req.body.password === users[id].password) {
+      //if you login with the right password
       res.cookie("user_id", id);
       res.redirect("/urls");
     } else {
@@ -217,8 +221,9 @@ app.post("/logout", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+//if anything other than the gets defined it will return 404
 app.get("*", (req, res) => {
-  res.send("<html><body><b>404 not found</b></body></html>\n");
+  res.status(404).send("<html><body><b>404 not found</b></body></html>\n");
 });
 
 app.listen(PORT, () => {

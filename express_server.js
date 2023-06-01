@@ -1,5 +1,6 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -47,12 +48,12 @@ const findIDWithEmail = function (email, user) {
 };
 
 const urlsForUser = function (id, urlDatabase) {
+  userUrls = {};
   for (const shortURL in urlDatabase) {
     if (urlDatabase[shortURL].userID === id) {
       userUrls[shortURL] = urlDatabase[shortURL];
     }
   }
-  console.log(urlDatabase);
   return userUrls;
 };
 
@@ -172,7 +173,7 @@ app.get("/register", (req, res) => {
 //Create user
 app.post("/register", (req, res) => {
   const email = req.body.email;
-  const password = req.body.password;
+  const password = bcrypt.hashSync(req.body.password);
   if (!email || !password) {
     res.status(400).send("Please include both a valid email and password");
   } else if (hasUser(email, users)) {
@@ -203,7 +204,7 @@ app.post("/login", (req, res) => {
   if (hasUser(req.body.email, users)) {
     //if you try logging in with the right email
     const id = findIDWithEmail(req.body.email, users);
-    if (req.body.password === users[id].password) {
+    if (bcrypt.compareSync(req.body.password, users[id].password)) {
       //if you login with the right password
       res.cookie("user_id", id);
       res.redirect("/urls");

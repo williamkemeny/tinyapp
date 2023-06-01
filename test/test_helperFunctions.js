@@ -5,7 +5,7 @@ const {
   hasUser,
   hasURL,
   urlsForUser,
-  findIDWithEmail,
+  getUserByEmail,
 } = require("../helpers.js");
 
 const testUsers = {
@@ -71,9 +71,9 @@ describe("hasURL", function () {
   });
 });
 
-describe("findIDWithEmail", function () {
+describe("getUserByEmail", function () {
   it("should return the profile id", function () {
-    const id = findIDWithEmail("user@example.com", testUsers);
+    const id = getUserByEmail("user@example.com", testUsers);
     assert.equal(id, "userRandomID");
   });
 });

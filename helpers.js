@@ -33,7 +33,7 @@ const hasURL = function (input, data) {
   return false;
 };
 
-const findIDWithEmail = function (email, user) {
+const getUserByEmail = function (email, user) {
   for (const profile in user) {
     if (user[profile].email === email) {
       return profile;
@@ -56,5 +56,5 @@ module.exports = {
   hasUser,
   hasURL,
   urlsForUser,
-  findIDWithEmail,
+  getUserByEmail,
 };

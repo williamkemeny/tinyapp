@@ -10,7 +10,7 @@ const {
   hasUser,
   hasURL,
   urlsForUser,
-  findIDWithEmail,
+  getUserByEmail,
 } = require("./helpers");
 
 const urlDatabase = {};
@@ -168,7 +168,7 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   if (hasUser(req.body.email, users)) {
     //if you try logging in with the right email
-    const id = findIDWithEmail(req.body.email, users);
+    const id = getUserByEmail(req.body.email, users);
     if (bcrypt.compareSync(req.body.password, users[id].password)) {
       //if you login with the right password
       req.session.user_id = id;

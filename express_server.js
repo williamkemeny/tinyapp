@@ -46,23 +46,18 @@ const findIDWithEmail = function (email, user) {
   }
 };
 
-const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+const urlsForUser = function (id, urlDatabase) {
+  for (const shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      userUrls[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  console.log(urlDatabase);
+  return userUrls;
 };
 
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
-};
+const urlDatabase = {};
+const users = {};
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
@@ -72,7 +67,7 @@ app.use(cookieParser());
 app.get("/urls", (req, res) => {
   const templateVars = {
     user: users[req.cookies["user_id"]],
-    urls: urlDatabase,
+    urls: urlsForUser(req.cookies["user_id"], urlDatabase),
   };
   res.render("urls_index", templateVars);
 });
@@ -90,7 +85,10 @@ app.post("/urls", (req, res) => {
   if (hasUser(req.cookies["user_id"], users)) {
     if (!Object.values(urlDatabase).includes(req.body.longURL)) {
       let shortURL = generateRandomString();
-      urlDatabase[shortURL] = req.body.longURL;
+      urlDatabase[shortURL] = {
+        longURL: req.body.longURL,
+        userID: req.cookies["user_id"],
+      };
       const templateVars = {
         user: users[req.cookies["user_id"]],
         id: shortURL,
@@ -116,7 +114,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     user: users[req.cookies["user_id"]],
     id: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    longURL: urlDatabase[req.params.id].longURL,
   };
   res.render("urls_show", templateVars);
 });
@@ -125,11 +123,14 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls/:id/update", (req, res) => {
   if (hasUser(req.cookies["user_id"], users)) {
     //if you arent logged in you can't change the url
-    urlDatabase[req.params.id] = req.body.newURL;
+    urlDatabase[req.params.id] = {
+      longURL: req.body.newURL,
+      userID: req.cookies["user_id"],
+    };
     const templateVars = {
       user: users[req.cookies["user_id"]],
       id: req.params.id,
-      longURL: urlDatabase[req.params.id],
+      longURL: urlDatabase[req.params.id].longURL,
     };
     res.render("urls_show", templateVars);
   } else {
@@ -137,7 +138,7 @@ app.post("/urls/:id/update", (req, res) => {
     const templateVars = {
       user: users[req.cookies["user_id"]],
       id: req.params.id,
-      longURL: urlDatabase[req.params.id],
+      longURL: urlDatabase[req.params.id].longURL,
     };
     res.render("urls_show", templateVars);
   }
@@ -155,7 +156,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
 //Link to the website
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
   res.redirect(longURL);
 });
 

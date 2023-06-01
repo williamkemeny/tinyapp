@@ -17,7 +17,7 @@
     <title>TinyApp</title>
   </head>
   <body>
-    <%- include('partials/_header.ejs') %>
+    <%- include('partials/_header.ejs') %> <% if(user) {%>
     <main style="margin: 1em">
       <h3>My URLs</h3>
       <table class="table">
@@ -33,7 +33,8 @@
           <% for (let id in urls) { %>
           <tr>
             <td><%= id %></td>
-            <td><%= urls[id] %></td>
+            <td><%= urls[id].longURL %></td>
+
             <td>
               <a href="/urls/<%= id %>">
                 <button class="btn btn-outline-primary">Edit</button>
@@ -45,11 +46,13 @@
               </form>
             </td>
           </tr>
-
           <% } %>
         </tbody>
       </table>
     </main>
+    <% } else{ %>
+    <h1 style="margin: 1em">Please login/register to start using Tiny App</h1>
+    <% } %>
     <!-- Bootstrap JS -->
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

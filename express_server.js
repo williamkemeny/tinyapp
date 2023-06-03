@@ -108,12 +108,24 @@ app.post("/urls/:id/update", (req, res) => {
 
 //delete button will remove the id from urlsDatabase
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
-  const templateVars = {
-    user: users[req.session.user_id],
-    urls: urlDatabase,
-  };
-  res.render("urls_index", templateVars);
+  if (req.session.user_id !== undefined) {
+    if (
+      hasURL(
+        urlDatabase[req.params.id].longURL,
+        urlDatabase,
+        req.session.user_id
+      )
+    ) {
+      delete urlDatabase[req.params.id];
+    }
+    const templateVars = {
+      user: users[req.session.user_id],
+      urls: urlDatabase,
+    };
+    res.render("urls_index", templateVars);
+  } else {
+    res.status(400).send("Must be logged in to delete.");
+  }
 });
 
 //Link to the website

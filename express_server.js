@@ -184,6 +184,14 @@ app.post("/logout", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+app.get("/", (req, res) => {
+  if (req.session.user_id !== undefined) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
+});
+
 //if anything other than the gets defined it will return 404
 app.get("*", (req, res) => {
   res.status(404).send("<html><body><b>404 not found</b></body></html>\n");

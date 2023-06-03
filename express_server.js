@@ -41,11 +41,15 @@ app.get("/urls", (req, res) => {
 
 //Page to create new urls
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    user: users[req.session.user_id],
-    urls: urlDatabase,
-  };
-  res.render("urls_new", templateVars);
+  if (req.session.user_id !== undefined) {
+    const templateVars = {
+      user: users[req.session.user_id],
+      urls: urlDatabase,
+    };
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.post("/urls", (req, res) => {

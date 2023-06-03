@@ -165,15 +165,11 @@ app.post("/register", (req, res) => {
 
 //Login Page
 app.get("/login", (req, res) => {
-  if (req.session.user_id === undefined) {
-    const templateVars = {
-      user: users[req.session.user_id],
-      urls: urlDatabase,
-    };
-    res.render("urls_login", templateVars);
-  } else {
-    res.redirect("/urls");
-  }
+  const templateVars = {
+    user: users[req.session.user_id],
+    urls: urlDatabase,
+  };
+  res.render("urls_login", templateVars);
 });
 
 //Login
@@ -196,8 +192,8 @@ app.post("/login", (req, res) => {
 //Logout
 app.post("/logout", (req, res) => {
   req.session = null;
-  const templateVars = { user: "", urls: urlDatabase };
-  res.render("urls_index", templateVars);
+
+  res.redirect("/login");
 });
 
 app.get("/", (req, res) => {

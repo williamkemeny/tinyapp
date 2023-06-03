@@ -8,9 +8,10 @@ const PORT = 8080; // default port 8080
 const {
   generateRandomString,
   hasUser,
-  hasURL,
+  hasTinyURL,
   urlsForUser,
   getUserByEmail,
+  hasURL,
 } = require("./helpers");
 
 const urlDatabase = {};
@@ -49,7 +50,8 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   if (hasUser(req.session.user_id, users)) {
-    if (!Object.values(urlDatabase).includes(req.body.longURL)) {
+    if (!hasURL(req.body.longURL, urlDatabase, req.session.user_id)) {
+      //checks if the URL has been made for that user
       let shortURL = generateRandomString();
       urlDatabase[shortURL] = {
         longURL: req.body.longURL,
@@ -62,8 +64,7 @@ app.post("/urls", (req, res) => {
       };
       res.render("urls_show", templateVars);
     } else {
-      const templateVars = { urls: urlDatabase };
-      res.render("urls_index", templateVars);
+      res.status(400).send("This URL has already been made for this user");
     }
   } else {
     res
@@ -74,7 +75,7 @@ app.post("/urls", (req, res) => {
 
 //Details about URL (Can delete on this page)
 app.get("/urls/:id", (req, res) => {
-  if (!hasURL(req.params.id, urlDatabase)) {
+  if (!hasTinyURL(req.params.id, urlDatabase)) {
     res.status(400).send("Not a valid Tiny URL");
   }
   const templateVars = {
@@ -89,25 +90,16 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls/:id/update", (req, res) => {
   if (hasUser(req.session.user_id, users)) {
     //if you arent logged in you can't change the url
-    urlDatabase[req.params.id] = {
-      longURL: req.body.newURL,
-      userID: req.session.user_id,
-    };
-    const templateVars = {
-      user: users[req.session.user_id],
-      id: req.params.id,
-      longURL: urlDatabase[req.params.id].longURL,
-    };
-    res.render("urls_show", templateVars);
-  } else {
-    //can still see the page just can't edit
-    const templateVars = {
-      user: users[req.session.user_id],
-      id: req.params.id,
-      longURL: urlDatabase[req.params.id].longURL,
-    };
-    res.render("urls_show", templateVars);
+    if (!hasURL(req.body.newURL, urlDatabase, req.session.user_id)) {
+      // can't make duplicate tiny URLS
+      urlDatabase[req.params.id] = {
+        longURL: req.body.newURL,
+        userID: req.session.user_id,
+      };
+    }
   }
+  //can still see the page just can't edit
+  res.redirect("/urls");
 });
 
 //delete button will remove the id from urlsDatabase
@@ -184,7 +176,7 @@ app.post("/login", (req, res) => {
 //Logout
 app.post("/logout", (req, res) => {
   req.session = null;
-  templateVars = { user: "", urls: urlDatabase };
+  const templateVars = { user: "", urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 

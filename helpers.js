@@ -1,4 +1,4 @@
-function generateRandomString(stringLen = 6) {
+const generateRandomString = function(stringLen = 6) {
   let randString = "";
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -11,9 +11,9 @@ function generateRandomString(stringLen = 6) {
     count += 1;
   }
   return randString;
-}
+};
 
-const hasUser = function (input, user) {
+const hasUser = function(input, user) {
   for (const profile in user) {
     if (user[profile].id === input) {
       return true;
@@ -24,7 +24,7 @@ const hasUser = function (input, user) {
   return false;
 };
 
-const hasURL = function (input, data) {
+const hasTinyURL = function(input, data) {
   for (const shortURL in data) {
     if (shortURL === input) {
       return true;
@@ -33,7 +33,16 @@ const hasURL = function (input, data) {
   return false;
 };
 
-const getUserByEmail = function (email, user) {
+const hasURL = function(URL, data, ID) {
+  for (const shortURL in data) {
+    if (data[shortURL].longURL === URL && data[shortURL].userID === ID) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const getUserByEmail = function(email, user) {
   for (const profile in user) {
     if (user[profile].email === email) {
       return profile;
@@ -41,8 +50,8 @@ const getUserByEmail = function (email, user) {
   }
 };
 
-const urlsForUser = function (id, urlDatabase) {
-  userUrls = {};
+const urlsForUser = function(id, urlDatabase) {
+  const userUrls = {};
   for (const shortURL in urlDatabase) {
     if (urlDatabase[shortURL].userID === id) {
       userUrls[shortURL] = urlDatabase[shortURL];
@@ -54,7 +63,8 @@ const urlsForUser = function (id, urlDatabase) {
 module.exports = {
   generateRandomString,
   hasUser,
-  hasURL,
+  hasTinyURL,
   urlsForUser,
   getUserByEmail,
+  hasURL,
 };
